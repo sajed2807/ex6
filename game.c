@@ -42,3 +42,55 @@ static void displayMap(GameState* g) {
     for (int i = 0; i < height; i++) free(grid[i]);
     free(grid);
 }
+/*
+Name: Sajed Isa
+ID: 325949089
+*/
+
+#include "game.h"
+#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+GameState* game_create(int hp, int atk){
+    GameState* g = malloc(sizeof(GameState));
+    g->rooms = NULL;
+    g->player = NULL;
+    g->roomCount = 0;
+    g->maxHp = hp;
+    g->baseAttack = atk;
+    return g;
+}
+
+void game_main_menu(GameState* g){
+    printf("Loaded Assets...\n");
+    while (1){
+        printf("1.Add Room\n2.Init Player\n3.Play\n4.Exit\n");
+        int c; scanf("%d",&c); getchar();
+        if (c==4) return;
+        if (c==2 && !g->player){
+            g->player = malloc(sizeof(Player));
+            g->player->hp = g->maxHp;
+            g->player->baseAttack = g->baseAttack;
+            g->player->bag = bst_create(compare_items, print_item, free_item);
+            g->player->defeated = bst_create(compare_monsters, print_monster, free_monster);
+            g->player->room = g->rooms;
+        }
+    }
+}
+
+void game_free(GameState* g){
+    if (g->player){
+        bst_free(g->player->bag);
+        bst_free(g->player->defeated);
+        free(g->player);
+    }
+    while (g->rooms){
+        Room* n = g->rooms->next;
+        if (g->rooms->monster) free_monster(g->rooms->monster);
+        if (g->rooms->item) free_item(g->rooms->item);
+        free(g->rooms);
+        g->rooms = n;
+    }
+    free(g);
+}
