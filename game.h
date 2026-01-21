@@ -63,3 +63,57 @@ void playGame(GameState* g);
 void freeGame(GameState* g);
 
 #endif
+/*
+Name: Sajed Isa
+ID: 325949089
+*/
+
+#ifndef GAME_H
+#define GAME_H
+
+#include "bst.h"
+
+typedef enum { ARMOR, SWORD } ItemType;
+typedef enum { PHANTOM, SPIDER, DEMON, GOLEM, COBRA } MonsterType;
+
+typedef struct Item {
+    char* name;
+    ItemType type;
+    int value;
+} Item;
+
+typedef struct Monster {
+    char* name;
+    MonsterType type;
+    int hp;
+    int attack;
+} Monster;
+
+typedef struct Room {
+    int id;
+    int x,y,visited;
+    Monster* monster;
+    Item* item;
+    struct Room* next;
+} Room;
+
+typedef struct Player {
+    int hp, baseAttack;
+    BST* bag;
+    BST* defeated;
+    Room* room;
+} Player;
+
+typedef struct {
+    Room* rooms;
+    Player* player;
+    int roomCount;
+    int maxHp;
+    int baseAttack;
+} GameState;
+
+GameState* game_create(int hp, int atk);
+void game_main_menu(GameState*);
+void game_free(GameState*);
+
+#endif
