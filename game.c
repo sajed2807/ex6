@@ -2,7 +2,6 @@
 Name: Sajed Isa
 ID: 325949089
 */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,90 +9,7 @@ ID: 325949089
 #include "bst.h"
 #include "utils.h"
 
-// --- Helper Functions ---
-
-int compareItems(void* a, void* b) {
-    Item* i1 = (Item*)a;
-    Item* i2 = (Item*)b;
-    int res = strcmp(i1->name, i2->name);
-    if (res != 0) return res;
-    if (i1->value != i2->value) return i1->value - i2->value;
-    return (int)i1->type - (int)i2->type;
-}
-
-void printItem(void* a) {
-    Item* i = (Item*)a;
-    printf("[%s] %s - Value: %d\n", (i->type == ARMOR ? "ARMOR" : "SWORD"), i->name, i->value);
-}
-
-void freeItem(void* a) {
-    Item* i = (Item*)a;
-    if (i) {
-        free(i->name);
-        free(i);
-    }
-}
-
-int compareMonsters(void* a, void* b) {
-    Monster* m1 = (Monster*)a;
-    Monster* m2 = (Monster*)b;
-    int res = strcmp(m1->name, m2->name);
-    if (res != 0) return res;
-    if (m1->attack != m2->attack) return m1->attack - m2->attack;
-    if (m1->hp != m2->hp) return m1->hp - m2->hp;
-    return (int)m1->type - (int)m2->type;
-}
-
-void printMonster(void* a) {
-    Monster* m = (Monster*)a;
-    char* types[] = {"Phantom", "Spider", "Demon", "Golem", "Cobra"};
-    printf("[%s] Type: %s, Attack: %d, HP: %d\n", m->name, types[m->type], m->attack, m->hp);
-}
-
-void freeMonster(void* a) {
-    Monster* m = (Monster*)a;
-    if (m) {
-        free(m->name);
-        free(m);
-    }
-}
-
-// --- Logic Functions ---
-
-void addRoom(GameState* g) {
-    if (!g) return;
-    Room* newRoom = (Room*)malloc(sizeof(Room));
-    if (!newRoom) return;
-    newRoom->id = g->roomCount++;
-    newRoom->x = 0;
-    newRoom->y = 0;
-    newRoom->monster = NULL;
-    newRoom->item = NULL;
-    newRoom->next = g->rooms;
-    g->rooms = newRoom;
-}
-
-void initPlayer(GameState* g) {
-    if (!g->player) {
-        g->player = (Player*)malloc(sizeof(Player));
-        if (!g->player) return;
-        g->player->hp = g->configMaxHp;
-        g->player->maxHp = g->configMaxHp;
-        g->player->baseAttack = g->configBaseAttack;
-        g->player->bag = createBST(compareItems, printItem, freeItem);
-        g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
-        g->player->currentRoom = g->rooms;
-    }
-}
-
-void playGame(GameState* g) {
-    // Used (void)g to tell the compiler that g is intentionally unused for now
-    (void)g;
-    printf("Playing game...\n");
-}
-
-// --- Framework Functions ---
-
+// Framework provided map function
 static void displayMap(GameState* g) {
     if (!g || !g->rooms) return;
     int minX = 0, maxX = 0, minY = 0, maxY = 0;
@@ -143,20 +59,20 @@ void game_main_menu(GameState* g) {
     while (1) {
         printf("=== MENU ===\n");
         printf("1.Add Room\n2.Init Player\n3.Play\n4.Exit\n");
-        
-        // Fixed: Added empty string as argument for getInt as required by utils.h
-        choice = getInt(""); 
-        
+        choice = getInt("Enter choice: ");
         if (choice == 4) break;
-        if (choice == 1) {
-            displayMap(g);
-            addRoom(g);
-        } else if (choice == 2) {
-            if (g->roomCount == 0) printf("Create rooms first\n");
-            else initPlayer(g);
-        } else if (choice == 3) {
-            if (!g->player) printf("Init player first\n");
-            else playGame(g);
+        if (choice == 1) displayMap(g);
+        else if (choice == 2) {
+            if (g->roomCount == 0 && !g->rooms) printf("Create rooms first\n");
+            else if (!g->player) {
+                g->player = malloc(sizeof(Player));
+                g->player->hp = g->configMaxHp;
+                g->player->maxHp = g->configMaxHp;
+                g->player->baseAttack = g->configBaseAttack;
+                g->player->bag = createBST(compareItems, printItem, freeItem);
+                g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
+                g->player->currentRoom = g->rooms;
+            }
         }
     }
 }
@@ -177,10 +93,12 @@ void game_free(GameState* g) {
     Room* curr = g->rooms;
     while (curr) {
         Room* next = curr->next;
-        if (curr->monster) freeMonster(curr->monster);
-        if (curr->item) freeItem(curr->item);
+        if (curr->monster) { free(curr->monster->name); free(curr->monster); }
+        if (curr->item) { free(curr->item->name); free(curr->item); }
         free(curr);
         curr = next;
     }
     free(g);
 }
+
+void freeGame(GameState* g) { game_free(g); }
