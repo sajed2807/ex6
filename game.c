@@ -10,7 +10,6 @@ ID: 325949089
 #include "bst.h"
 #include "utils.h"
 
-// --- The provided displayMap function ---
 static void displayMap(GameState* g) {
     if (!g || !g->rooms) return;
 
@@ -47,8 +46,6 @@ static void displayMap(GameState* g) {
     free(grid);
 }
 
-// --- Game Logic Implementation ---
-
 GameState* game_create(int hp, int atk) {
     GameState* g = (GameState*)malloc(sizeof(GameState));
     if (!g) return NULL;
@@ -79,7 +76,6 @@ void game_main_menu(GameState* g) {
 
         if (choice == 1) {
             displayMap(g);
-            // Logic for adding a room
         }
 
         if (choice == 2) {
@@ -91,9 +87,8 @@ void game_main_menu(GameState* g) {
                     g->player->hp = g->configMaxHp;
                     g->player->maxHp = g->configMaxHp;
                     g->player->baseAttack = g->configBaseAttack;
-                    // Corrected names to match headers:
-                    g->player->bag = bstCreate(compareItems, printItem, freeItem);
-                    g->player->defeatedMonsters = bstCreate(compareMonsters, printMonster, freeMonster);
+                    g->player->bag = createBST(compareItems, printItem, freeItem);
+                    g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
                     g->player->currentRoom = g->rooms;
                 }
             }
@@ -104,7 +99,6 @@ void game_main_menu(GameState* g) {
                 printf("Init player first\n");
             } else {
                 displayMap(g);
-                // Play logic
             }
         }
     }
@@ -113,9 +107,14 @@ void game_main_menu(GameState* g) {
 void game_free(GameState* g) {
     if (!g) return;
     if (g->player) {
-        // Corrected names to bstFree and defeatedMonsters
-        if (g->player->bag) bstFree(g->player->bag);
-        if (g->player->defeatedMonsters) bstFree(g->player->defeatedMonsters);
+        if (g->player->bag) {
+            bstFree(g->player->bag->root, g->player->bag->freeData);
+            free(g->player->bag);
+        }
+        if (g->player->defeatedMonsters) {
+            bstFree(g->player->defeatedMonsters->root, g->player->defeatedMonsters->freeData);
+            free(g->player->defeatedMonsters);
+        }
         free(g->player);
     }
     Room* curr = g->rooms;
