@@ -10,7 +10,7 @@ ID: 325949089
 #include "bst.h"
 #include "utils.h"
 
-// --- Helper Functions required by the linker ---
+// --- Helper Functions ---
 
 int compareItems(void* a, void* b) {
     Item* i1 = (Item*)a;
@@ -18,7 +18,7 @@ int compareItems(void* a, void* b) {
     int res = strcmp(i1->name, i2->name);
     if (res != 0) return res;
     if (i1->value != i2->value) return i1->value - i2->value;
-    return i1->type - i2->type;
+    return (int)i1->type - (int)i2->type;
 }
 
 void printItem(void* a) {
@@ -41,7 +41,7 @@ int compareMonsters(void* a, void* b) {
     if (res != 0) return res;
     if (m1->attack != m2->attack) return m1->attack - m2->attack;
     if (m1->hp != m2->hp) return m1->hp - m2->hp;
-    return m1->type - m2->type;
+    return (int)m1->type - (int)m2->type;
 }
 
 void printMonster(void* a) {
@@ -58,25 +58,25 @@ void freeMonster(void* a) {
     }
 }
 
-// --- Logic Functions (Missions) ---
+// --- Logic Functions ---
 
 void addRoom(GameState* g) {
-    // Basic logic to prevent undefined reference
+    if (!g) return;
     Room* newRoom = (Room*)malloc(sizeof(Room));
     if (!newRoom) return;
     newRoom->id = g->roomCount++;
-    newRoom->x = 0; // Simplified for initial fix
+    newRoom->x = 0;
     newRoom->y = 0;
     newRoom->monster = NULL;
     newRoom->item = NULL;
     newRoom->next = g->rooms;
     g->rooms = newRoom;
-    printf("Created room %d at (0,0)\n", newRoom->id);
 }
 
 void initPlayer(GameState* g) {
     if (!g->player) {
         g->player = (Player*)malloc(sizeof(Player));
+        if (!g->player) return;
         g->player->hp = g->configMaxHp;
         g->player->maxHp = g->configMaxHp;
         g->player->baseAttack = g->configBaseAttack;
@@ -87,10 +87,12 @@ void initPlayer(GameState* g) {
 }
 
 void playGame(GameState* g) {
+    // Used (void)g to tell the compiler that g is intentionally unused for now
+    (void)g;
     printf("Playing game...\n");
 }
 
-// --- Required Framework Functions ---
+// --- Framework Functions ---
 
 static void displayMap(GameState* g) {
     if (!g || !g->rooms) return;
@@ -141,7 +143,10 @@ void game_main_menu(GameState* g) {
     while (1) {
         printf("=== MENU ===\n");
         printf("1.Add Room\n2.Init Player\n3.Play\n4.Exit\n");
-        choice = getInt();
+        
+        // Fixed: Added empty string as argument for getInt as required by utils.h
+        choice = getInt(""); 
+        
         if (choice == 4) break;
         if (choice == 1) {
             displayMap(g);
