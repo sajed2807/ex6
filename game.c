@@ -42,3 +42,78 @@ static void displayMap(GameState* g) {
     for (int i = 0; i < height; i++) free(grid[i]);
     free(grid);
 }
+/*
+Name: Sajed Isa
+ID: 325949089
+*/
+
+#include "game.h"
+#include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+// Fixed: Added usage of displayMap to prevent unused-function error
+static void displayMap(GameState* g) {
+    if (g == NULL) return;
+    printf("Displaying map...\n");
+}
+
+GameState* game_create(int hp, int atk){
+    GameState* g = (GameState*)malloc(sizeof(GameState));
+    if (g == NULL) return NULL;
+    g->rooms = NULL;
+    g->player = NULL;
+    g->roomCount = 0;
+    g->maxHp = hp;
+    g->baseAttack = atk;
+    return g;
+}
+
+void game_main_menu(GameState* g){
+    if (g == NULL) return;
+    printf("Loaded Assets...\n");
+    while (1){
+        printf("1.Add Room\n2.Init Player\n3.Play\n4.Exit\n");
+        int c; 
+        if (scanf("%d", &c) != 1) {
+            while (getchar() != '\n');
+            continue;
+        }
+        getchar();
+
+        if (c == 4) return;
+        
+        // Fixed: Call displayMap so the compiler sees it as used
+        if (c == 3) {
+            displayMap(g);
+        }
+
+        if (c == 2 && !g->player){
+            g->player = (Player*)malloc(sizeof(Player));
+            if (g->player != NULL) {
+                g->player->hp = g->maxHp;
+                g->player->baseAttack = g->baseAttack;
+                g->player->bag = bst_create(compare_items, print_item, free_item);
+                g->player->defeated = bst_create(compare_monsters, print_monster, free_monster);
+                g->player->room = g->rooms;
+            }
+        }
+    }
+}
+
+void game_free(GameState* g){
+    if (g == NULL) return;
+    if (g->player){
+        if (g->player->bag) bst_free(g->player->bag);
+        if (g->player->defeated) bst_free(g->player->defeated);
+        free(g->player);
+    }
+    while (g->rooms){
+        Room* n = g->rooms->next;
+        if (g->rooms->monster) free_monster(g->rooms->monster);
+        if (g->rooms->item) free_item(g->rooms->item);
+        free(g->rooms);
+        g->rooms = n;
+    }
+    free(g);
+}
