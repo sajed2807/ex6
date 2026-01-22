@@ -1,7 +1,7 @@
 #include "bst.h"
 #include <stdlib.h>
 
-/* Matches bst.h line 17 exactly */
+/* Matches bst.h line 17: int (cmp)(void, void*), void (print)(void), void (freeData)(void) */
 BST* createBST(int (cmp)(void, void*), void (print)(void), void (freeData)(void)) {
     BST* bst = (BST*)malloc(sizeof(BST));
     if (!bst) return NULL;
@@ -12,7 +12,7 @@ BST* createBST(int (cmp)(void, void*), void (print)(void), void (freeData)(void)
     return bst;
 }
 
-/* Matches bst.h line 23 exactly */
+/* Matches bst.h line 23: void (freeData)(void) */
 void bstFree(BSTNode* root, void (freeData)(void)) {
     if (!root) return;
     bstFree(root->left, freeData);
