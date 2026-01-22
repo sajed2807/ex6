@@ -35,7 +35,7 @@ void game_main_menu(GameState* g) {
                 g->player->hp = g->configMaxHp;
                 g->player->maxHp = g->configMaxHp;
                 g->player->baseAttack = g->configBaseAttack;
-                /* Matches createBST signature in bst.h */
+                /* Passes function pointers from utils.c */
                 g->player->bag = createBST(compareItems, printItem, freeItem);
                 g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
             }
@@ -47,7 +47,7 @@ void game_free(GameState* g) {
     if (!g) return;
     if (g->player) {
         if (g->player->bag) {
-            /* Passes root and freeData function pointer */
+            /* Passes bag root and the freeData pointer stored in the BST */
             bstFree(g->player->bag->root, g->player->bag->freeData);
             free(g->player->bag);
         }
@@ -56,6 +56,21 @@ void game_free(GameState* g) {
             free(g->player->defeatedMonsters);
         }
         free(g->player);
+    }
+    
+    Room* curr = g->rooms;
+    while (curr) {
+        Room* next = curr->next;
+        if (curr->monster) {
+            if (curr->monster->name) free(curr->monster->name);
+            free(curr->monster);
+        }
+        if (curr->item) {
+            if (curr->item->name) free(curr->item->name);
+            free(curr->item);
+        }
+        free(curr);
+        curr = next;
     }
     free(g);
 }
