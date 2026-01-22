@@ -1,19 +1,21 @@
 #include "bst.h"
 #include <stdlib.h>
 
-BST* createBST(CompareFunc comp, PrintFunc print, FreeFunc freeD) {
-    BST* bst = malloc(sizeof(BST));
+// Use the explicit function pointer definitions from bst.h
+BST* createBST(int (compare)(void, void*), void (print)(void), void (freeData)(void)) {
+    BST* bst = (BST*)malloc(sizeof(BST));
+    if (!bst) return NULL;
     bst->root = NULL;
-    bst->compare = comp;
+    bst->compare = compare;
     bst->print = print;
-    bst->freeData = freeD;
+    bst->freeData = freeData;
     return bst;
 }
 
-void bstFree(BSTNode* root, FreeFunc freeD) {
+void bstFree(BSTNode* root, void (freeData)(void)) {
     if (!root) return;
-    bstFree(root->left, freeD);
-    bstFree(root->right, freeD);
-    freeD(root->data);
+    bstFree(root->left, freeData);
+    bstFree(root->right, freeData);
+    if (freeData) freeData(root->data);
     free(root);
 }
