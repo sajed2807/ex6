@@ -149,7 +149,6 @@ void playGame(GameState* g) {
             }
             if (g->player->hp <= 0) { printf("--- YOU DIED ---\n"); exit(0); }
             printf("Monster defeated!\n");
-            // الإصلاح هنا: استخدام bstInsert وتحديث الـ root
             g->player->defeatedMonsters->root = bstInsert(g->player->defeatedMonsters->root, r->monster, g->player->defeatedMonsters->compare);
             r->monster = NULL;
         } else if (choice == 3) {
