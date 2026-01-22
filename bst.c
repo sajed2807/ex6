@@ -14,85 +14,66 @@ static BSTNode* createNode(void* data) {
     BSTNode* node = (BSTNode*)malloc(sizeof(BSTNode));
     if (!node) return NULL;
     node->data = data;
-    node->left = NULL;
-    node->right = NULL;
+    node->left = node->right = NULL;
     return node;
 }
 
-static BSTNode* insertHelper(BSTNode* root, void* data, int (compare)(void, void*)) {
-    if (!root) return createNode(data);
-    
-    int cmp = compare(data, root->data);
-    if (cmp < 0) {
-        root->left = insertHelper(root->left, data, compare);
-    } else if (cmp > 0) {
-        root->right = insertHelper(root->right, data, compare);
-    }
-    return root;
-}
-
-static void printPreOrderHelper(BSTNode* root, void (print)(void)) {
-    if (!root) return;
-    print(root->data);
-    printPreOrderHelper(root->left, print);
-    printPreOrderHelper(root->right, print);
-}
-
-static void printInOrderHelper(BSTNode* root, void (print)(void)) {
-    if (!root) return;
-    printInOrderHelper(root->left, print);
-    print(root->data);
-    printInOrderHelper(root->right, print);
-}
-
-static void printPostOrderHelper(BSTNode* root, void (print)(void)) {
-    if (!root) return;
-    printPostOrderHelper(root->left, print);
-    printPostOrderHelper(root->right, print);
-    print(root->data);
-}
-
-static void freeTreeHelper(BSTNode* root, void (freeData)(void)) {
-    if (!root) return;
-    freeTreeHelper(root->left, freeData);
-    freeTreeHelper(root->right, freeData);
-    if (freeData) freeData(root->data);
-    free(root);
-}
-
-BST* createBST(int (compare)(void, void*), void (print)(void), void (freeData)(void)) {
+BST* createBST(int (cmp)(void, void*), void (print)(void), void (freeData)(void)) {
     BST* tree = (BST*)malloc(sizeof(BST));
     if (!tree) return NULL;
-    
     tree->root = NULL;
-    tree->compare = compare;
+    tree->compare = cmp;
     tree->print = print;
     tree->freeData = freeData;
     return tree;
 }
 
+static BSTNode* insertHelper(BSTNode* root, void* data, int (cmp)(void, void*)) {
+    if (root == NULL) return createNode(data);
+    int res = cmp(data, root->data);
+    if (res < 0)
+        root->left = insertHelper(root->left, data, cmp);
+    else if (res > 0)
+        root->right = insertHelper(root->right, data, cmp);
+    return root;
+}
+
 void insertBST(BST* tree, void* data) {
-    if (!tree || !data) return;
+    if (!tree) return;
     tree->root = insertHelper(tree->root, data, tree->compare);
 }
 
-void printPreOrder(BST* tree) {
-    if (!tree || !tree->print) return;
-    printPreOrderHelper(tree->root, tree->print);
+void bstPrintPreorder(BSTNode* root, void (print)(void)) {
+    if (!root) return;
+    print(root->data);
+    bstPrintPreorder(root->left, print);
+    bstPrintPreorder(root->right, print);
 }
 
-void printInOrder(BST* tree) {
-    if (!tree || !tree->print) return;
-    printInOrderHelper(tree->root, tree->print);
+void bstPrintInorder(BSTNode* root, void (print)(void)) {
+    if (!root) return;
+    bstPrintInorder(root->left, print);
+    print(root->data);
+    bstPrintInorder(root->right, print);
 }
 
-void printPostOrder(BST* tree) {
-    if (!tree || !tree->print) return;
-    printPostOrderHelper(tree->root, tree->print);
+void bstPrintPostorder(BSTNode* root, void (print)(void)) {
+    if (!root) return;
+    bstPrintPostorder(root->left, print);
+    bstPrintPostorder(root->right, print);
+    print(root->data);
 }
 
-void freeBST(BST* tree) {
+static void destroyNodes(BSTNode* root, void (freeData)(void)) {
+    if (!root) return;
+    destroyNodes(root->left, freeData);
+    destroyNodes(root->right, freeData);
+    if (freeData) freeData(root->data);
+    free(root);
+}
+
+void destroyBST(BST* tree) {
     if (!tree) return;
-    freeTreeHelper(tree->root, tree->freeData);
+    destroyNodes(tree->root, tree->freeData);
     free(tree);
 }
