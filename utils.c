@@ -5,17 +5,16 @@
 
 int getInt(const char* prompt) {
     int val;
-    if (prompt) printf("%s", prompt);
-    if (scanf("%d", &val) != 1) {
-        while (getchar() != '\n');
-        return -1;
-    }
+    printf("%s", prompt);
+    scanf("%d", &val);
     return val;
 }
 
-int compareItems(void* a, void* b) { (void)a; (void)b; return 0; }
-void printItem(void* a) { (void)a; }
-void freeItem(void* a) { if (a) free(a); }
-int compareMonsters(void* a, void* b) { (void)a; (void)b; return 0; }
-void printMonster(void* a) { (void)a; }
-void freeMonster(void* a) { if (a) free(a); }
+char* getString(const char* prompt) {
+    char buffer[256];
+    printf("%s", prompt);
+    scanf(" %255[^\n]", buffer);
+    char* s = malloc(strlen(buffer) + 1);
+    strcpy(s, buffer);
+    return s;
+}
