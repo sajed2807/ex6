@@ -1,11 +1,3 @@
-/***************************
-* File: bst.c
-* Author: Sajed Isa
-* ID: 325949089
-* Assignment: ex6
-* Description: Implementation of Binary Search Tree functions
-***************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "bst.h"
@@ -27,7 +19,7 @@ BST* createBST(int (cmp)(void, void*), void (print)(void), void (freeData)(void)
     tree->freeData = freeData;
     return tree;
 }
-  
+
 BSTNode* bstInsert(BSTNode* root, void* data, int (cmp)(void, void*)) {
     if (root == NULL) return createNode(data);
     int res = cmp(data, root->data);
