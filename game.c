@@ -14,11 +14,9 @@ Assignment: ex6
 /* Helper to check if all rooms are cleared */
 static int allRoomsCleared(GameState* g) {
     if (!g || !g->rooms) return 0;
-    /* Basic logic to allow progression */
     return 0; 
 }
 
-/* Internal logic placeholder to prevent undefined reference */
 static void addRoomLogic(GameState* g) {
     (void)g;
 }
@@ -59,7 +57,6 @@ void game_main_menu(GameState* g) {
         printf("3.Play\n");
         printf("4.Exit\n");
 
-        /* getInt requires a prompt string */
         choice = getInt("Choice: ");
 
         switch (choice) {
@@ -70,9 +67,8 @@ void game_main_menu(GameState* g) {
                 initPlayer(g);
                 break;
             case 3:
-                if (playGame(g)) {
-                    running = 0;   /* End game after victory */
-                }
+                /* FIXED: playGame is void, so we just call it without 'if' */
+                playGame(g);
                 break;
             case 4:
                 running = 0;
@@ -93,22 +89,20 @@ void initPlayer(GameState* g) {
     g->player->maxHp = g->configMaxHp;
     g->player->baseAttack = g->configBaseAttack;
 
-    /* createBST matches bst.h signature */
     g->player->bag = createBST(compareItems, printItem, freeItem);
     g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
 }
 
-int playGame(GameState* g) {
-    if (!g || !g->player || !g->rooms) return 0;
+/* FIXED: Changed from int to void to match game.h line 62 */
+void playGame(GameState* g) {
+    if (!g || !g->player || !g->rooms) return;
 
     if (allRoomsCleared(g)) {
         printf("*************\n");
         printf("VICTORY!\n");
         printf("All rooms explored. All monsters defeated.\n");
         printf("*************\n");
-        return 1;
     }
-    return 0;
 }
 
 void addRoom(GameState* g) {
@@ -121,7 +115,6 @@ void game_free(GameState* g) {
 
     if (g->player) {
         if (g->player->bag) {
-            /* bstFree requires root and freeData function pointer */
             bstFree(g->player->bag->root, g->player->bag->freeData);
             free(g->player->bag);
         }
