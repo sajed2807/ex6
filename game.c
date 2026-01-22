@@ -11,15 +11,9 @@ Assignment: ex6
 #include "bst.h"
 #include "utils.h"
 
-/* Helper to check if all rooms are cleared */
-static int allRoomsCleared(GameState* g) {
-    if (!g || !g->rooms) return 0;
-    return 0; 
-}
-
-static void addRoomLogic(GameState* g) {
-    (void)g;
-}
+/* Real logic needs to be called here to match expected output */
+extern void addRoomLogic(GameState* g); // Assuming this is defined elsewhere
+extern void playLevel(GameState* g);    // Assuming this is your gameplay loop
 
 static void freeRoom(Room* r) {
     if (!r) return;
@@ -48,9 +42,7 @@ GameState* game_create(int hp, int atk) {
 void game_main_menu(GameState* g) {
     if (!g) return;
     int choice;
-    int running = 1;
-
-    while (running) {
+    while (1) {
         printf("=== MENU ===\n");
         printf("1.Add Room\n");
         printf("2.Init Player\n");
@@ -58,6 +50,8 @@ void game_main_menu(GameState* g) {
         printf("4.Exit\n");
 
         choice = getInt("Choice: ");
+
+        if (choice == 4) break;
 
         switch (choice) {
             case 1:
@@ -67,11 +61,7 @@ void game_main_menu(GameState* g) {
                 initPlayer(g);
                 break;
             case 3:
-                /* FIXED: playGame is void, so we just call it without 'if' */
                 playGame(g);
-                break;
-            case 4:
-                running = 0;
                 break;
             default:
                 break;
@@ -81,38 +71,31 @@ void game_main_menu(GameState* g) {
 
 void initPlayer(GameState* g) {
     if (!g || g->player) return;
-
     g->player = (Player*)malloc(sizeof(Player));
     if (!g->player) return;
 
     g->player->hp = g->configMaxHp;
     g->player->maxHp = g->configMaxHp;
     g->player->baseAttack = g->configBaseAttack;
-
     g->player->bag = createBST(compareItems, printItem, freeItem);
     g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
 }
 
-/* FIXED: Changed from int to void to match game.h line 62 */
 void playGame(GameState* g) {
     if (!g || !g->player || !g->rooms) return;
-
-    if (allRoomsCleared(g)) {
-        printf("*************\n");
-        printf("VICTORY!\n");
-        printf("All rooms explored. All monsters defeated.\n");
-        printf("*************\n");
-    }
+    /* You must call your actual game loop here to produce the 
+       "--- Room X ---" and "1.Move 2.Fight..." output */
+    playLevel(g); 
 }
 
 void addRoom(GameState* g) {
     if (!g) return;
-    addRoomLogic(g);
+    /* This must call the logic that asks for Monster name, HP, etc. */
+    addRoomLogic(g); 
 }
 
 void game_free(GameState* g) {
     if (!g) return;
-
     if (g->player) {
         if (g->player->bag) {
             bstFree(g->player->bag->root, g->player->bag->freeData);
@@ -124,7 +107,6 @@ void game_free(GameState* g) {
         }
         free(g->player);
     }
-
     Room* curr = g->rooms;
     while (curr) {
         Room* next = curr->next;
@@ -134,6 +116,4 @@ void game_free(GameState* g) {
     free(g);
 }
 
-void freeGame(GameState* g) {
-    game_free(g);
-}
+void freeGame(GameState* g) { game_free(g); }
