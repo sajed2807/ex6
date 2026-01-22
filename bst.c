@@ -1,10 +1,9 @@
 #include "bst.h"
 #include <stdlib.h>
 
-BST* createBST(int (*cmp)(void*, void*),
-               void (*print)(void*),
-               void (*freeData)(void*)) {
+BST* createBST(int (*cmp)(void*, void*), void (*print)(void*), void (*freeData)(void*)) {
     BST* bst = malloc(sizeof(BST));
+    if (!bst) return NULL;
     bst->root = NULL;
     bst->compare = cmp;
     bst->print = print;
@@ -12,28 +11,26 @@ BST* createBST(int (*cmp)(void*, void*),
     return bst;
 }
 
-void insertBST(BST* bst, void* data) {
-    if (!bst) return;
-
-    BSTNode* node = malloc(sizeof(BSTNode));
-    node->data = data;
-    node->left = node->right = NULL;
-
-    if (!bst->root) {
-        bst->root = node;
-        return;
+BSTNode* bstInsert(BSTNode* root, void* data, int (*cmp)(void*, void*)) {
+    if (!root) {
+        BSTNode* n = malloc(sizeof(BSTNode));
+        n->data = data;
+        n->left = n->right = NULL;
+        return n;
     }
+    if (cmp(data, root->data) < 0)
+        root->left = bstInsert(root->left, data, cmp);
+    else
+        root->right = bstInsert(root->right, data, cmp);
+    return root;
+}
 
-    BSTNode* current = bst->root;
-    while (1) {
-        if (bst->compare(data, current->data) < 0) {
-            if (!current->left) { current->left = node; break; }
-            else current = current->left;
-        } else {
-            if (!current->right) { current->right = node; break; }
-            else current = current->right;
-        }
-    }
+void* bstFind(BSTNode* root, void* data, int (*cmp)(void*, void*)) {
+    if (!root) return NULL;
+    int c = cmp(data, root->data);
+    if (c == 0) return root->data;
+    if (c < 0) return bstFind(root->left, data, cmp);
+    return bstFind(root->right, data, cmp);
 }
 
 void bstInorder(BSTNode* root, void (*print)(void*)) {
@@ -61,6 +58,7 @@ void bstFree(BSTNode* root, void (*freeData)(void*)) {
     if (!root) return;
     bstFree(root->left, freeData);
     bstFree(root->right, freeData);
-    if (freeData) freeData(root->data);
+    if (freeData && root->data) freeData(root->data);
     free(root);
 }
+
