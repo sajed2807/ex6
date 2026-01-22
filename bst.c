@@ -1,17 +1,18 @@
 #include "bst.h"
 #include <stdlib.h>
 
-/* Fixed: Added the asterisks inside parentheses to correctly define function pointers */
-BST* createBST(int (compare)(void, void*), void (print)(void), void (freeData)(void)) {
+/* Matches bst.h line 17 exactly */
+BST* createBST(int (cmp)(void, void*), void (print)(void), void (freeData)(void)) {
     BST* bst = (BST*)malloc(sizeof(BST));
     if (!bst) return NULL;
     bst->root = NULL;
-    bst->compare = compare;
+    bst->compare = cmp;
     bst->print = print;
     bst->freeData = freeData;
     return bst;
 }
 
+/* Matches bst.h line 23 exactly */
 void bstFree(BSTNode* root, void (freeData)(void)) {
     if (!root) return;
     bstFree(root->left, freeData);
