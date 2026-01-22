@@ -4,17 +4,17 @@
 #include <string.h>
 
 int getInt(const char* prompt) {
-    int val;
+    int n;
     printf("%s", prompt);
-    scanf("%d", &val);
-    return val;
+    scanf("%d", &n);
+    return n;
 }
 
 char* getString(const char* prompt) {
     char buffer[256];
     printf("%s", prompt);
     scanf(" %255[^\n]", buffer);
-    char* s = malloc(strlen(buffer) + 1);
+    char* s = malloc(strlen(buffer)+1);
     strcpy(s, buffer);
     return s;
 }
