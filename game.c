@@ -131,10 +131,12 @@ void addRoom(GameState* g) {
 
 void initPlayer(GameState* g) {
     if (g->player) return;
+
     g->player = malloc(sizeof(Player));
     g->player->hp = g->configMaxHp;
     g->player->maxHp = g->configMaxHp;
     g->player->baseAttack = g->configBaseAttack;
+
     g->player->bag = createBST(compareItems, printItem, freeItem);
     g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
 }
@@ -174,8 +176,11 @@ void playGame(GameState* g) {
             else if (d == 3) nx++;
 
             if (findRoomByXY(nx, ny, g->roomCount)) {
-                x = nx; y = ny;
-            } else printf("No room in that direction.\n");
+                x = nx;
+                y = ny;
+            } else {
+                printf("No room in that direction.\n");
+            }
         }
         else if (c == 2 && r->monster) {
             while (r->monster->hp > 0 && g->player->hp > 0) {
@@ -190,22 +195,33 @@ void playGame(GameState* g) {
                            g->player->hp);
                 }
             }
+
             printf("Monster defeated!\n");
-            insertBST(g->player->defeatedMonsters, r->monster);
+            g->player->defeatedMonsters->root =
+                bstInsert(g->player->defeatedMonsters->root,
+                          r->monster,
+                          g->player->defeatedMonsters->compare);
             r->monster = NULL;
         }
         else if (c == 3 && r->item) {
             printf("Picked up %s\n", r->item->name);
-            insertBST(g->player->bag, r->item);
+            g->player->bag->root =
+                bstInsert(g->player->bag->root,
+                          r->item,
+                          g->player->bag->compare);
             r->item = NULL;
         }
         else if (c == 4 || c == 5) {
             BST* t = (c == 4) ? g->player->bag : g->player->defeatedMonsters;
             printf("1.Preorder\n2.Inorder\n3.Postorder\n");
             int o = getInt("Choice: ");
-            if (o == 1) bstPrintPreorder(t->root, t->printData);
-            else if (o == 2) bstPrintInorder(t->root, t->printData);
-            else bstPrintPostorder(t->root, t->printData);
+
+            if (o == 1)
+                bstPreorder(t->root, t->print);
+            else if (o == 2)
+                bstInorder(t->root, t->print);
+            else
+                bstPostorder(t->root, t->print);
         }
     }
 }
@@ -220,5 +236,6 @@ void game_main_menu(GameState* g) {
         else if (c == 3) playGame(g);
     }
 }
+
 
 
