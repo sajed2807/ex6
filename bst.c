@@ -1,80 +1,128 @@
-#include "bst.h"
-#include <stdlib.h>
-#include <stdio.h>
+/***************************
+* File: bst.c
+* Author: Sajed Isa
+* ID: 325949089
+* Assignment: ex6
+* Description: Implementation of Binary Search Tree functions
+***************************/
 
-BST* createBST(int (*cmp)(void*, void*),
-               void (*print)(void*),
-               void (*freeData)(void*))
-{
-    BST* bst = malloc(sizeof(BST));
-    if (!bst) return NULL;
-    bst->root = NULL;
-    bst->compare = cmp;
-    bst->print = print;
-    bst->freeData = freeData;
-    return bst;
+#include <stdio.h>
+#include <stdlib.h>
+#include "bst.h"
+#include "game.h"
+
+static BSTNode* createNode(void* data) {
+    BSTNode* node = (BSTNode*)malloc(sizeof(BSTNode));
+    if (node == NULL) {
+        return NULL;
+    }
+    node->data = data;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
 }
 
-BSTNode* bstInsert(BSTNode* root, void* data, int (*cmp)(void*, void*))
-{
-    if (!root) {
-        BSTNode* node = malloc(sizeof(BSTNode));
-        node->data = data;
-        node->left = node->right = NULL;
-        return node;
+static BSTNode* insertHelper(BSTNode* root, void* data, int (compare)(void, void*)) {
+    if (root == NULL) {
+        return createNode(data);
     }
-    if (cmp(data, root->data) < 0)
-        root->left = bstInsert(root->left, data, cmp);
-    else
-        root->right = bstInsert(root->right, data, cmp);
+    
+    int comparison = compare(data, root->data);
+    if (comparison < 0) {
+        root->left = insertHelper(root->left, data, compare);
+    } else if (comparison > 0) {
+        root->right = insertHelper(root->right, data, compare);
+    }
+    
     return root;
 }
 
-void* bstFind(BSTNode* root, void* data, int (*cmp)(void*, void*))
-{
-    if (!root) return NULL;
-    int res = cmp(data, root->data);
-    if (res == 0) return root->data;
-    if (res < 0) return bstFind(root->left, data, cmp);
-    return bstFind(root->right, data, cmp);
-}
-
-void bstInorder(BSTNode* root, void (*print)(void*))
-{
-    if (!root) return;
-    bstInorder(root->left, print);
+static void printPreOrderHelper(BSTNode* root, void (print)(void)) {
+    if (root == NULL) {
+        return;
+    }
     print(root->data);
-    bstInorder(root->right, print);
+    printPreOrderHelper(root->left, print);
+    printPreOrderHelper(root->right, print);
 }
 
-void bstPreorder(BSTNode* root, void (*print)(void*))
-{
-    if (!root) return;
+static void printInOrderHelper(BSTNode* root, void (print)(void)) {
+    if (root == NULL) {
+        return;
+    }
+    printInOrderHelper(root->left, print);
     print(root->data);
-    bstPreorder(root->left, print);
-    bstPreorder(root->right, print);
+    printInOrderHelper(root->right, print);
 }
 
-void bstPostorder(BSTNode* root, void (*print)(void*))
-{
-    if (!root) return;
-    bstPostorder(root->left, print);
-    bstPostorder(root->right, print);
+static void printPostOrderHelper(BSTNode* root, void (print)(void)) {
+    if (root == NULL) {
+        return;
+    }
+    printPostOrderHelper(root->left, print);
+    printPostOrderHelper(root->right, print);
     print(root->data);
 }
 
-void bstFree(BSTNode* root, void (*freeData)(void*))
-{
-    if (!root) return;
-    bstFree(root->left, freeData);
-    bstFree(root->right, freeData);
-    if (freeData && root->data) freeData(root->data);
+static void freeTreeHelper(BSTNode* root, void (freeData)(void)) {
+    if (root == NULL) {
+        return;
+    }
+    freeTreeHelper(root->left, freeData);
+    freeTreeHelper(root->right, freeData);
+    if (freeData != NULL) {
+        freeData(root->data);
+    }
     free(root);
 }
 
-// ===================== New helper for your game =====================
-void insertBST(BST* tree, void* data)
-{
-    if (!tree) return;
-    tree->root = bstInsert(tree->root, data, tree->compare);
+BST* createBST(int (compare)(void, void*), void (print)(void), void (freeData)(void)) {
+    BST* tree = (BST*)malloc(sizeof(BST));
+    if (tree == NULL) {
+        return NULL;
+    }
+    
+    tree->root = NULL;
+    tree->compare = compare;
+    tree->print = print;
+    tree->freeData = freeData;
+    
+    return tree;
+}
+
+void insertBST(BST* tree, void* data) {
+    if (tree == NULL || data == NULL) {
+        return;
+    }
+    
+    tree->root = insertHelper(tree->root, data, tree->compare);
+}
+
+void printPreOrder(BST* tree) {
+    if (tree == NULL || tree->print == NULL) {
+        return;
+    }
+    printPreOrderHelper(tree->root, tree->print);
+}
+
+void printInOrder(BST* tree) {
+    if (tree == NULL || tree->print == NULL) {
+        return;
+    }
+    printInOrderHelper(tree->root, tree->print);
+}
+
+void printPostOrder(BST* tree) {
+    if (tree == NULL || tree->print == NULL) {
+        return;
+    }
+    printPostOrderHelper(tree->root, tree->print);
+}
+
+void freeBST(BST* tree) {
+    if (tree == NULL) {
+        return;
+    }
+    freeTreeHelper(tree->root, tree->freeData);
+    free(tree);
 }
