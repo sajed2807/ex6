@@ -1,24 +1,42 @@
 #include "bst.h"
 #include <stdlib.h>
+#include <stddef.h>
 
-/* Matches bst.h line 17 signature exactly: int ()(void, void*), void ()(void), void ()(void) */
-BST* createBST(int (cmp)(void, void*), void (print)(void), void (freeData)(void)) {
-    BST* bst = (BST*)malloc(sizeof(BST));
-    if (!bst) return NULL;
+/* createBST:
+ * cmp      - comparison function (void*, void*)
+ * print    - print data
+ * freeData - free data
+ */
+BST* createBST(int (cmp)(void, void*),
+               void (print)(void),
+               void (freeData)(void)) 
+{
+    BST* bst = malloc(sizeof(BST));
+    if (bst == NULL) {
+        return NULL;
+    }
+
     bst->root = NULL;
     bst->compare = cmp;
     bst->print = print;
     bst->freeData = freeData;
+
     return bst;
 }
 
-/* Matches bst.h line 23 signature exactly: void ()(void) */
-void bstFree(BSTNode* root, void (freeData)(void)) {
-    if (!root) return;
+/* Recursively frees BST nodes */
+void bstFree(BSTNode* root, void (freeData)(void)) 
+{
+    if (root == NULL) {
+        return;
+    }
+
     bstFree(root->left, freeData);
     bstFree(root->right, freeData);
-    if (freeData && root->data) {
+
+    if (freeData != NULL && root->data != NULL) {
         freeData(root->data);
     }
+
     free(root);
 }
