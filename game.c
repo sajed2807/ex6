@@ -3,10 +3,6 @@ Name: Sajed Isa
 ID: 325949089
 Assignment: ex6
 */
-// NOTE: This is a SPEC-COMPLIANT reference implementation skeleton
-// It focuses on CORRECT OUTPUT, FLOW, and LOGIC as expected by autograders.
-// You MUST still adapt function prototypes to exactly match your provided headers.
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
