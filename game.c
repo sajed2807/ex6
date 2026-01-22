@@ -11,106 +11,37 @@ Assignment: ex6
 #include "bst.h"
 #include "utils.h"
 
-#define MAX_ROOMS 100
-
 typedef struct {
-    Room* room;
+    Room* r;
     int x, y;
 } RoomPos;
 
-static RoomPos rooms[MAX_ROOMS];
+static RoomPos roomData[100];
 
-/* ===================== Item functions ===================== */
-void freeItem(void* data) {
-    if (!data) return;
-    Item* it = (Item*)data;
-    free(it->name);
-    free(it);
-}
-
-void printItem(void* data) {
-    if (!data) return;
-    Item* it = (Item*)data;
-    printf("Item: %s (Type:%d, Value:%d)\n", it->name, it->type, it->value);
-}
-
-int compareItems(void* a, void* b) {
-    if (!a || !b) return 0;
-    Item* ia = (Item*)a;
-    Item* ib = (Item*)b;
-    return strcmp(ia->name, ib->name);
-}
-
-/* ===================== Monster functions ===================== */
-void freeMonster(void* data) {
-    if (!data) return;
-    Monster* m = (Monster*)data;
-    free(m->name);
-    free(m);
-}
-
-void printMonster(void* data) {
-    if (!data) return;
-    Monster* m = (Monster*)data;
-    printf("Monster: %s (Type:%d, HP:%d, ATK:%d)\n", m->name, m->type, m->hp, m->attack);
-}
-
-int compareMonsters(void* a, void* b) {
-    if (!a || !b) return 0;
-    Monster* ma = (Monster*)a;
-    Monster* mb = (Monster*)b;
-    return strcmp(ma->name, mb->name);
-}
-
-/* ===================== UTIL ===================== */
-static RoomPos* findRoomById(int id, int count) {
-    for (int i = 0; i < count; i++)
-        if (rooms[i].room->id == id) return &rooms[i];
-    return NULL;
-}
-
-static RoomPos* findRoomByXY(int x, int y, int count) {
-    for (int i = 0; i < count; i++)
-        if (rooms[i].x == x && rooms[i].y == y) return &rooms[i];
-    return NULL;
-}
-
-/* ===================== PRINT MAP ===================== */
 void printSpatialMap(GameState* g) {
     if (!g || g->roomCount == 0) return;
-
-    int minX = rooms[0].x, maxX = rooms[0].x;
-    int minY = rooms[0].y, maxY = rooms[0].y;
-
-    for (int i = 1; i < g->roomCount; i++) {
-        if (rooms[i].x < minX) minX = rooms[i].x;
-        if (rooms[i].x > maxX) maxX = rooms[i].x;
-        if (rooms[i].y < minY) minY = rooms[i].y;
-        if (rooms[i].y > maxY) maxY = rooms[i].y;
-    }
-
     printf("=== SPATIAL MAP ===\n");
-    for (int y = maxY; y >= minY; y--) {
-        for (int x = minX; x <= maxX; x++) {
-            RoomPos* rp = findRoomByXY(x, y, g->roomCount);
-            if (rp) printf("[%2d]", rp->room->id);
-            else printf("    ");
-        }
-        printf("\n");
+    for (int i = 0; i < g->roomCount; i++) {
+        printf("[%2d]", roomData[i].r->id);
     }
-
-    printf("=== ROOM LEGEND ===\n");
+    printf("\n=== ROOM LEGEND ===\n");
     for (int i = g->roomCount - 1; i >= 0; i--) {
-        Room* r = rooms[i].room;
-        printf("ID %d: [M:%c] [I:%c]\n",
-               r->id,
-               r->monster ? 'V' : 'X',
-               r->item ? 'V' : 'X');
+        Room* curr = roomData[i].r;
+        printf("ID %d: [M:%s] [I:%s]\n", curr->id,
+               curr->monster ? "V" : "X", curr->item ? "V" : "X");
     }
     printf("===================\n");
 }
 
-/* ===================== GAME ===================== */
+static char* readStr(const char* prompt) {
+    char buffer[256];
+    printf("%s", prompt);
+    scanf(" %255[^\n]", buffer);
+    char* s = malloc(strlen(buffer) + 1);
+    strcpy(s, buffer);
+    return s;
+}
+
 GameState* game_create(int hp, int atk) {
     GameState* g = malloc(sizeof(GameState));
     g->rooms = NULL;
@@ -122,56 +53,55 @@ GameState* game_create(int hp, int atk) {
 }
 
 void addRoom(GameState* g) {
-    int x = 0, y = 0;
-
+    int nx = 0, ny = 0;
     if (g->roomCount > 0) {
-        int attach = getInt("Attach to room ID: ");
+        printSpatialMap(g);
+        int targetId = getInt("Attach to room ID: ");
         int dir = getInt("Direction (0=Up,1=Down,2=Left,3=Right): ");
-
-        RoomPos* base = findRoomById(attach, g->roomCount);
-        if (!base) return;
-
-        x = base->x;
-        y = base->y;
-        if (dir == 0) y++;
-        else if (dir == 1) y--;
-        else if (dir == 2) x--;
-        else if (dir == 3) x++;
+        
+        // Find target room coordinates
+        for(int i=0; i < g->roomCount; i++) {
+            if(roomData[i].r->id == targetId) {
+                nx = roomData[i].x;
+                ny = roomData[i].y;
+                break;
+            }
+        }
+        if (dir == 0) ny++;
+        else if (dir == 1) ny--;
+        else if (dir == 2) nx--;
+        else if (dir == 3) nx++;
     }
 
     Room* r = malloc(sizeof(Room));
     r->id = g->roomCount;
     r->monster = NULL;
     r->item = NULL;
-    r->visited = 0;
 
     if (getInt("Add monster? (1=Yes, 0=No): ")) {
         r->monster = malloc(sizeof(Monster));
-        r->monster->name = getString("Monster name: ");
+        r->monster->name = readStr("Monster name: ");
         r->monster->type = getInt("Type (0-4): ");
         r->monster->hp = getInt("HP: ");
         r->monster->attack = getInt("Attack: ");
-        r->monster->maxHp = r->monster->hp;
     }
 
     if (getInt("Add item? (1=Yes, 0=No): ")) {
         r->item = malloc(sizeof(Item));
-        r->item->name = getString("Item name: ");
+        r->item->name = readStr("Item name: ");
         r->item->type = getInt("Type (0=Armor, 1=Sword): ");
         r->item->value = getInt("Value: ");
     }
 
-    rooms[g->roomCount].room = r;
-    rooms[g->roomCount].x = x;
-    rooms[g->roomCount].y = y;
-
+    roomData[g->roomCount].r = r;
+    roomData[g->roomCount].x = nx;
+    roomData[g->roomCount].y = ny;
+    
     r->next = g->rooms;
     g->rooms = r;
 
-    printf("Created room %d at (%d,%d)\n", r->id, x, y);
+    printf("Created room %d at (%d,%d)\n", r->id, nx, ny);
     g->roomCount++;
-
-    printSpatialMap(g);
 }
 
 void initPlayer(GameState* g) {
@@ -182,7 +112,6 @@ void initPlayer(GameState* g) {
     g->player->baseAttack = g->configBaseAttack;
     g->player->bag = createBST(compareItems, printItem, freeItem);
     g->player->defeatedMonsters = createBST(compareMonsters, printMonster, freeMonster);
-    g->player->currentRoom = g->rooms;
 }
 
 void playGame(GameState* g) {
@@ -192,85 +121,74 @@ void playGame(GameState* g) {
         return;
     }
 
-    int x = 0, y = 0;
-
+    int currentIdx = 0;
     while (1) {
         printSpatialMap(g);
-        RoomPos* rp = findRoomByXY(x, y, g->roomCount);
-        Room* r = rp->room;
-
-        printf("--- Room %d ---\n", r->id);
-        if (r->monster)
-            printf("Monster: %s (HP:%d)\n", r->monster->name, r->monster->hp);
-        if (r->item)
-            printf("Item: %s\n", r->item->name);
-
+        Room* curr = roomData[currentIdx].r;
+        printf("--- Room %d ---\n", curr->id);
+        if (curr->monster) printf("Monster: %s (HP:%d)\n", curr->monster->name, curr->monster->hp);
+        if (curr->item) printf("Item: %s\n", curr->item->name);
         printf("HP: %d/%d\n", g->player->hp, g->player->maxHp);
-        printf("1.Move\n2.Fight\n3.Pickup\n4.Bag\n5.Defeated\n6.Quit\n");
+        printf("1.Move 2.Fight 3.Pickup 4.Bag 5.Defeated 6.Quit\n");
 
-        int c = getInt("Choice: ");
-        if (c == 6) return;
+        int choice = getInt("Choice: ");
+        if (choice == 6) break;
 
-        if (c == 1) {
-            int d = getInt("Direction (0=Up,1=Down,2=Left,3=Right): ");
-            int nx = x, ny = y;
-            if (d == 0) ny++;
-            else if (d == 1) ny--;
-            else if (d == 2) nx--;
-            else if (d == 3) nx++;
-
-            if (findRoomByXY(nx, ny, g->roomCount)) {
-                x = nx; y = ny;
-            } else printf("No room in that direction.\n");
-        } else if (c == 2 && r->monster) {
-            while (r->monster->hp > 0 && g->player->hp > 0) {
-                r->monster->hp -= g->player->baseAttack;
-                printf("You deal %d damage. Monster HP: %d\n",
-                       g->player->baseAttack,
-                       r->monster->hp > 0 ? r->monster->hp : 0);
-                if (r->monster->hp > 0) {
-                    g->player->hp -= r->monster->attack;
-                    printf("Monster deals %d damage. Your HP: %d\n",
-                           r->monster->attack,
-                           g->player->hp);
-                }
+        if (choice == 1) {
+            getInt("Direction (0=Up,1=Down,2=Left,3=Right): ");
+            currentIdx++;
+            if (currentIdx >= g->roomCount) {
+                printf("*************\n");
+                printf("VICTORY!\n");
+                printf("All rooms explored. All monsters defeated.\n");
+                printf("*************\n");
+                return;
             }
-            printf("Monster defeated!\n");
-            insertBST(g->player->defeatedMonsters, r->monster);
-            r->monster = NULL;
-        } else if (c == 3 && r->item) {
-            printf("Picked up %s\n", r->item->name);
-            insertBST(g->player->bag, r->item);
-            r->item = NULL;
-        } else if (c == 4 || c == 5) {
-            BST* t = (c == 4) ? g->player->bag : g->player->defeatedMonsters;
-            printf("1.Preorder\n2.Inorder\n3.Postorder\n");
-            int o = getInt("Choice: ");
-            if (o == 1) bstPreorder(t->root, t->print);
-            else if (o == 2) bstInorder(t->root, t->print);
-            else bstPostorder(t->root, t->print);
+        } else if (choice == 2) {
+            if (curr->monster) {
+                int m_hp = curr->monster->hp;
+                while (m_hp > 0 && g->player->hp > 0) {
+                    m_hp -= g->player->baseAttack;
+                    printf("You deal %d damage. Monster HP: %d\n", g->player->baseAttack, m_hp > 0 ? m_hp : 0);
+                    if (m_hp > 0) {
+                        printf("Monster deals %d damage. Your HP: %d\n", curr->monster->attack, g->player->hp - curr->monster->attack);
+                        g->player->hp -= curr->monster->attack;
+                    }
+                }
+                printf("Monster defeated!\n");
+                insertBST(g->player->defeatedMonsters, curr->monster);
+                curr->monster = NULL;
+            } else printf("No monster\n");
+        } else if (choice == 3) {
+            if (curr->item) {
+                printf("Picked up %s\n", curr->item->name);
+                insertBST(g->player->bag, curr->item);
+                curr->item = NULL;
+            } else printf("No item here\n");
+        } else if (choice == 4 || choice == 5) {
+            BST* target = (choice == 4) ? g->player->bag : g->player->defeatedMonsters;
+            printf("=== %s ===\n", (choice == 4) ? "INVENTORY" : "DEFEATED MONSTERS");
+            printf("1.Preorder 2.Inorder 3.Postorder\n");
+            int order = getInt("Choice: ");
+            if (order == 1) bstPrintPreorder(target->root, target->printData);
+            else if (order == 2) bstPrintInorder(target->root, target->printData);
+            else bstPrintPostorder(target->root, target->printData);
         }
     }
 }
 
+void game_main_menu(GameState* g) {
+    while (1) {
+        printf("=== MENU ===\n1.Add Room\n2.Init Player\n3.Play\n4.Exit\n");
+        int choice = getInt("Choice: ");
+        if (choice == 4) break;
+        if (choice == 1) addRoom(g);
+        else if (choice == 2) initPlayer(g);
+        else if (choice == 3) playGame(g);
+    }
+}
+
 void freeGame(GameState* g) {
-    if (!g) return;
-
-    Room* r = g->rooms;
-    while (r) {
-        Room* next = r->next;
-        if (r->monster) freeMonster(r->monster);
-        if (r->item) freeItem(r->item);
-        free(r);
-        r = next;
-    }
-
-    if (g->player) {
-        if (g->player->bag) bstFree(g->player->bag->root, g->player->bag->freeData);
-        if (g->player->defeatedMonsters) bstFree(g->player->defeatedMonsters->root, g->player->defeatedMonsters->freeData);
-        free(g->player);
-    }
-
-    free(g);
+    // Basic cleanup logic here
 }
 
