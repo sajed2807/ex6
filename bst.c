@@ -1,8 +1,7 @@
 #include "bst.h"
 #include <stdlib.h>
 
-/* ================= CREATE ================= */
-
+/* ===== CREATE ===== */
 BST* createBST(int (*cmp)(void*, void*),
                void (*print)(void*),
                void (*freeData)(void*))
@@ -17,17 +16,15 @@ BST* createBST(int (*cmp)(void*, void*),
     return bst;
 }
 
-/* ================= INSERT ================= */
-
+/* ===== INSERT ===== */
 BSTNode* bstInsert(BSTNode* root, void* data, int (*cmp)(void*, void*))
 {
-    if (root == NULL) {
-        BSTNode* node = malloc(sizeof(BSTNode));
-        if (!node) return NULL;
-        node->data = data;
-        node->left = NULL;
-        node->right = NULL;
-        return node;
+    if (!root) {
+        BSTNode* n = malloc(sizeof(BSTNode));
+        if (!n) return NULL;
+        n->data = data;
+        n->left = n->right = NULL;
+        return n;
     }
 
     if (cmp(data, root->data) < 0)
@@ -38,11 +35,10 @@ BSTNode* bstInsert(BSTNode* root, void* data, int (*cmp)(void*, void*))
     return root;
 }
 
-/* ================= FIND ================= */
-
+/* ===== FIND ===== */
 void* bstFind(BSTNode* root, void* data, int (*cmp)(void*, void*))
 {
-    if (root == NULL) return NULL;
+    if (!root) return NULL;
 
     int c = cmp(data, root->data);
     if (c == 0) return root->data;
@@ -50,8 +46,7 @@ void* bstFind(BSTNode* root, void* data, int (*cmp)(void*, void*))
     return bstFind(root->right, data, cmp);
 }
 
-/* ================= TRAVERSALS ================= */
-
+/* ===== PRINT ===== */
 void bstInorder(BSTNode* root, void (*print)(void*))
 {
     if (!root) return;
@@ -68,5 +63,24 @@ void bstPreorder(BSTNode* root, void (*print)(void*))
     bstPreorder(root->right, print);
 }
 
-void bs
+void bstPostorder(BSTNode* root, void (*print)(void*))
+{
+    if (!root) return;
+    bstPostorder(root->left, print);
+    bstPostorder(root->right, print);
+    print(root->data);
+}
 
+/* ===== FREE ===== */
+void bstFree(BSTNode* root, void (*freeData)(void*))
+{
+    if (!root) return;
+
+    bstFree(root->left, freeData);
+    bstFree(root->right, freeData);
+
+    if (freeData)
+        freeData(root->data);
+
+    free(root);
+}
