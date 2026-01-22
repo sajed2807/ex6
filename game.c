@@ -9,7 +9,6 @@ ID: 325949089
 #include "bst.h"
 #include "utils.h"
 
-// Framework provided map function
 static void displayMap(GameState* g) {
     if (!g || !g->rooms) return;
     int minX = 0, maxX = 0, minY = 0, maxY = 0;
@@ -63,9 +62,9 @@ void game_main_menu(GameState* g) {
         if (choice == 4) break;
         if (choice == 1) displayMap(g);
         else if (choice == 2) {
-            if (g->roomCount == 0 && !g->rooms) printf("Create rooms first\n");
+            if (g->roomCount == 0) printf("Create rooms first\n");
             else if (!g->player) {
-                g->player = malloc(sizeof(Player));
+                g->player = (Player*)malloc(sizeof(Player));
                 g->player->hp = g->configMaxHp;
                 g->player->maxHp = g->configMaxHp;
                 g->player->baseAttack = g->configBaseAttack;
@@ -102,3 +101,6 @@ void game_free(GameState* g) {
 }
 
 void freeGame(GameState* g) { game_free(g); }
+void addRoom(GameState* g) { (void)g; }
+void initPlayer(GameState* g) { (void)g; }
+void playGame(GameState* g) { (void)g; }
