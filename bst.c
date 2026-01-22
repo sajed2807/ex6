@@ -1,7 +1,7 @@
 #include "bst.h"
 #include <stdlib.h>
 
-// Fixed function pointers to match bst.h exactly
+/* Fixed: Added the asterisks inside parentheses to correctly define function pointers */
 BST* createBST(int (compare)(void, void*), void (print)(void), void (freeData)(void)) {
     BST* bst = (BST*)malloc(sizeof(BST));
     if (!bst) return NULL;
