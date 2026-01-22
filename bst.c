@@ -1,9 +1,9 @@
 #include "bst.h"
 #include <stdlib.h>
 
-BST* createBST(int (cmp)(void, void*),
-               void (print)(void),
-               void (freeData)(void))
+BST* createBST(int (*cmp)(void*, void*),
+               void (*print)(void*),
+               void (*freeData)(void*))
 {
     BST* bst = malloc(sizeof(BST));
     if (bst == NULL) {
@@ -18,7 +18,7 @@ BST* createBST(int (cmp)(void, void*),
     return bst;
 }
 
-void bstFree(BSTNode* root, void (freeData)(void))
+void bstFree(BSTNode* root, void (*freeData)(void*))
 {
     if (root == NULL) {
         return;
