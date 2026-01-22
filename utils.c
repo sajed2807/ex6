@@ -1,7 +1,6 @@
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 int getInt(const char* prompt) {
     int val;
@@ -13,7 +12,6 @@ int getInt(const char* prompt) {
     return val;
 }
 
-// Fixed: Using (void) to prevent unused parameter error
 int compareItems(void* a, void* b) { (void)a; (void)b; return 0; }
 void printItem(void* a) { (void)a; }
 void freeItem(void* a) { if (a) free(a); }
