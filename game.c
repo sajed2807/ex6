@@ -12,7 +12,7 @@ Assignment: ex6
 #include "utils.h"
 
 int compareItems(void* a, void* b) {
-    Item i1 = (Item)a, i2 = (Item)b;
+    Item *i1 = (Item*)a, *i2 = (Item*)b;
     int res = strcmp(i1->name, i2->name);
     if (res != 0) return res;
     if (i1->value != i2->value) return i1->value - i2->value;
