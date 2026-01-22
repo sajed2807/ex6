@@ -1,15 +1,9 @@
 #include "bst.h"
 #include <stdlib.h>
-#include <stddef.h>
 
-/* createBST:
- * cmp      - comparison function (void*, void*)
- * print    - print data
- * freeData - free data
- */
 BST* createBST(int (cmp)(void, void*),
                void (print)(void),
-               void (freeData)(void)) 
+               void (freeData)(void))
 {
     BST* bst = malloc(sizeof(BST));
     if (bst == NULL) {
@@ -24,8 +18,7 @@ BST* createBST(int (cmp)(void, void*),
     return bst;
 }
 
-/* Recursively frees BST nodes */
-void bstFree(BSTNode* root, void (freeData)(void)) 
+void bstFree(BSTNode* root, void (freeData)(void))
 {
     if (root == NULL) {
         return;
