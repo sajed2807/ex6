@@ -1,43 +1,23 @@
 #include "bst.h"
 #include <stdlib.h>
-#include <stdio.h>
-
-BST* createBST(int (*cmp)(void*, void*),
-               void (*print)(void*),
-               void (*freeData)(void*)) 
-{
-    BST* bst = malloc(sizeof(BST));
-    if (!bst) return NULL;
-
-    bst->root = NULL;
-    bst->compare = cmp;
-    bst->print = print;
-    bst->freeData = freeData;
-
-    return bst;
-}
 
 BSTNode* bstInsert(BSTNode* root, void* data, int (*cmp)(void*, void*)) {
     if (!root) {
-        BSTNode* node = malloc(sizeof(BSTNode));
-        if (!node) return NULL;
-        node->data = data;
-        node->left = node->right = NULL;
-        return node;
+        BSTNode* n = malloc(sizeof(BSTNode));
+        n->data = data;
+        n->left = n->right = NULL;
+        return n;
     }
-
-    int res = cmp(data, root->data);
-    if (res < 0) root->left = bstInsert(root->left, data, cmp);
-    else if (res > 0) root->right = bstInsert(root->right, data, cmp);
+    if (cmp(data, root->data) < 0)
+        root->left = bstInsert(root->left, data, cmp);
+    else
+        root->right = bstInsert(root->right, data, cmp);
     return root;
 }
 
-void* bstFind(BSTNode* root, void* data, int (*cmp)(void*, void*)) {
-    if (!root) return NULL;
-    int res = cmp(data, root->data);
-    if (res == 0) return root->data;
-    else if (res < 0) return bstFind(root->left, data, cmp);
-    else return bstFind(root->right, data, cmp);
+void insertBST(BST* tree, void* data) {
+    if (!tree) return;
+    tree->root = bstInsert(tree->root, data, tree->compare);
 }
 
 void bstInorder(BSTNode* root, void (*print)(void*)) {
@@ -69,8 +49,20 @@ void bstFree(BSTNode* root, void (*freeData)(void*)) {
     free(root);
 }
 
-void insertBST(BST* tree, void* data) {
-    if (!tree) return;
-    tree->root = bstInsert(tree->root, data, tree->compare);
+void* bstFind(BSTNode* root, void* data, int (*cmp)(void*, void*)) {
+    if (!root) return NULL;
+    int res = cmp(data, root->data);
+    if (res == 0) return root->data;
+    if (res < 0) return bstFind(root->left, data, cmp);
+    return bstFind(root->right, data, cmp);
+}
+
+BST* createBST(int (*cmp)(void*, void*), void (*print)(void*), void (*freeData)(void*)) {
+    BST* tree = malloc(sizeof(BST));
+    tree->root = NULL;
+    tree->compare = cmp;
+    tree->print = print;
+    tree->freeData = freeData;
+    return tree;
 }
 
